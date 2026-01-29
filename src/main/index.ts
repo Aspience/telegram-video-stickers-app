@@ -169,7 +169,7 @@ void app.whenReady().then(() => {
       }
 
       // 2. Crop
-      // React-easy-crop gives x, y, width, height (pixels)
+      // React-easy-crop gives x, y, width, height (cropAreaPixels)
       // Ensure integers
       const cropW = Math.round(crop.width);
       const cropH = Math.round(crop.height);
