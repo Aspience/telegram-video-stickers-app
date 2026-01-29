@@ -1,5 +1,5 @@
 import React from 'react';
-import {Box} from '@mui/material';
+import {Alert, Box, Snackbar} from '@mui/material';
 
 import {Editor} from './components/Editor';
 import {Result} from './components/Result';
@@ -7,9 +7,9 @@ import {Uploader} from './components/Uploader';
 import {useStore} from './store';
 
 const App: React.FC = () => {
-  const {file, processedFile} = useStore((state) => state);
+  const {file, processedFile, notification, hideNotification} = useStore((state) => state);
 
-  let content;
+  let content: React.ReactNode;
   if (processedFile) {
     content = <Result />;
   } else if (file) {
@@ -18,7 +18,23 @@ const App: React.FC = () => {
     content = <Uploader />;
   }
 
-  return <Box sx={{height: '100vh', width: '100vw', bgcolor: '#f5f5f5'}}>{content}</Box>;
+  return (
+    <Box sx={{height: '100vh', width: '100vw', bgcolor: '#f5f5f5'}}>
+      {content}
+      <Snackbar
+        open={!!notification}
+        autoHideDuration={6000}
+        onClose={hideNotification}
+        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+      >
+        {notification ? (
+          <Alert onClose={hideNotification} severity={notification.severity} sx={{width: '100%'}}>
+            {notification.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
+    </Box>
+  );
 };
 
 export default App;
