@@ -19,6 +19,13 @@ interface State {
   processedFile: string | null;
   boomerangFrameTrim: number;
   notification: {message: string; severity: AlertColor} | null;
+  speed: SpeedState;
+}
+
+export interface SpeedState {
+  enabled: boolean;
+  value: number;
+  range: {start: number; end: number};
 }
 
 interface Setters {
@@ -33,6 +40,7 @@ interface Setters {
   hideNotification: () => void;
   clearResult: () => void;
   reset: () => void;
+  setSpeed: (speed: Partial<SpeedState>) => void;
 }
 
 type AppState = State & Setters;
@@ -52,9 +60,14 @@ const initialState: State = {
   processedFile: null,
   boomerangFrameTrim: 1,
   notification: null,
+  speed: {
+    enabled: false,
+    value: 1,
+    range: {start: 0, end: 1},
+  },
 };
 
-export const useStore = create<AppState>((set) => ({
+export const useStore = create<AppState>((set, get) => ({
   ...initialState,
   setFile: (file, path, meta) => set({file, filePath: path, metadata: meta}),
   setCrop: (crop) => set({crop}),
@@ -67,4 +80,5 @@ export const useStore = create<AppState>((set) => ({
   hideNotification: () => set({notification: null}),
   clearResult: () => set({processedFile: null}),
   reset: () => set({...initialState}),
+  setSpeed: (speed) => set({speed: {...get().speed, ...speed}}),
 }));

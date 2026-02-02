@@ -121,54 +121,139 @@ void app.whenReady().then(() => {
 
   // IPC: Transcode Video
   ipcMain.handle('transcode-video', async (_, args) => {
-    const {inputPath, outputPath, crop, trim, boomerang, boomerangFrameTrim = 1} = args;
+    const {inputPath, outputPath, crop, trim, boomerang, boomerangFrameTrim = 1, speed} = args;
 
     // Telegram Requirements:
     // WebM, VP9, No Audio, 512x512 max, 30FPS, <256KB, 3s max
 
     return new Promise((resolve, reject) => {
+      // Force FPS input to avoiding sync issues
       const command = ffmpeg(inputPath).noAudio().fps(30).format('webm').videoCodec('libvpx-vp9');
 
       // Complex Filters
       const filters: string[] = [];
 
       // 1. Trim
-      // Format to 3 decimals to ensure clean FFmpeg args
       const trimStart = trim.start.toFixed(3);
       const trimEnd = trim.end.toFixed(3);
+      const duration = trim.end - trim.start;
 
-      // We will perform trim via filters to handle boomerang correctly
-      let stream = '[0:v]';
+      // Base stream: Trimmed to user selection.
+      // We perform trim FIRST, then speed, then (optionally) boomerang.
+      filters.push(
+        `[0:v]fps=30,format=yuv420p,trim=start=${trimStart}:end=${trimEnd},setpts=PTS-STARTPTS[base_trimmed]`
+      );
 
+      let currentStream = '[base_trimmed]';
+
+      // 2. Speed Control
+      if (speed && speed.enabled) {
+        // Speed Logic:
+        // We split the [base_trimmed] into 3 segments:
+        // A: 0 to RangeStart
+        // B: RangeStart to RangeEnd (Speed applied here)
+        // C: RangeEnd to Duration
+
+        // Range is relative to the TRIMMED video
+        const rStart = Math.max(0, speed.range.start);
+        const rEnd = Math.min(duration, speed.range.end);
+
+        if (rEnd > rStart) {
+          // Determine inputs for each part logic
+          // We effectively have 3 potential segments: A (Pre), B (Speed Range), C (Post).
+          // B is always present (the selected range).
+          const hasPartA = rStart > 0.01;
+          const hasPartC = rEnd < duration - 0.01;
+
+          let inputA = '';
+          let inputB = '';
+          let inputC = '';
+
+          // Construct Split Filter based on connected components needed
+          if (hasPartA && hasPartC) {
+            // Need A, B, C
+            filters.push(`${currentStream}split=3[pre_in][mid_in][post_in]`);
+            inputA = '[pre_in]';
+            inputB = '[mid_in]';
+            inputC = '[post_in]';
+          } else if (hasPartA && !hasPartC) {
+            // Need A, B
+            filters.push(`${currentStream}split=2[pre_in][mid_in]`);
+            inputA = '[pre_in]';
+            inputB = '[mid_in]';
+          } else if (!hasPartA && hasPartC) {
+            // Need B, C
+            filters.push(`${currentStream}split=2[mid_in][post_in]`);
+            inputB = '[mid_in]';
+            inputC = '[post_in]';
+          } else {
+            // Need B only
+            // Direct pass-through
+            inputB = currentStream;
+          }
+
+          // Part A (if start > 0)
+          let partA = '';
+          if (hasPartA) {
+            filters.push(`${inputA}trim=start=0:end=${rStart},setpts=PTS-STARTPTS[speed_a]`);
+            partA = '[speed_a]';
+          }
+
+          // Part B (The Speed Zone)
+          const partB = '[speed_b]';
+
+          // Constant Speed
+          // Speed Factor S. New Duration = Old / S.
+          // setpts = PTS * (1/S)
+          const factor = 1 / speed.value;
+          filters.push(`${inputB}trim=start=${rStart}:end=${rEnd},setpts=PTS-STARTPTS[mid_trimmed]`);
+          filters.push(`[mid_trimmed]setpts=${factor}*PTS[speed_b]`);
+
+          // Part C (if end < duration)
+          let partC = '';
+          if (hasPartC) {
+            filters.push(`${inputC}trim=start=${rEnd},setpts=PTS-STARTPTS[speed_c]`);
+            partC = '[speed_c]';
+          }
+
+          // Concat
+          const inputs = [partA, partB, partC].filter(Boolean);
+          filters.push(`${inputs.join('')}concat=n=${inputs.length}:v=1:a=0:unsafe=1[speed_concat]`);
+          // Force FPS after speed changes to ensure consistent frame rate and avoid "sharp" jumps
+          filters.push(`[speed_concat]fps=30[speed_out]`);
+          currentStream = '[speed_out]';
+        }
+      }
+
+      // 3. Boomerang & Final Prep
       if (boomerang) {
         // Standard Boomerang Graph:
-        // 1. Force FPS & Format -> Trim -> base
-        // We force fps=30 FIRST to align timebases, preventing black frame gaps
-        // Use explicit start= and end= syntax to avoid "Invalid argument" with positional args
-        filters.push(`[0:v]fps=30,format=yuv420p,trim=start=${trimStart}:end=${trimEnd},setpts=PTS-STARTPTS[base]`);
+        // [currentStream] is our "Base".
+        // 1. Split
+        filters.push(`${currentStream}split[fwd][rev_in]`);
 
-        // 2. Split
-        filters.push(`[base]split[fwd][rev_in]`);
-
-        // 3. Forward Chain: Ensure setpts is reset (redundant but safe for concat)
+        // 2. Forward Chain: Ensure setpts is reset (redundant but safe for concat)
         filters.push(`[fwd]setpts=PTS-STARTPTS[fwd_out]`);
 
-        // 4. Reverse Chain: Reverse then reset PTS
+        // 3. Reverse Chain: Reverse then reset PTS
         // Trim X frame(s) from start of reversed clip to avoid duplicate frame at apex
-        // Use start_frame to skip exactly N frames
         const trimReverse = boomerangFrameTrim > 0 ? `,trim=start_frame=${boomerangFrameTrim}` : '';
         filters.push(`[rev_in]reverse${trimReverse},setpts=PTS-STARTPTS[rev_out]`);
 
-        // 5. Concat
+        // 4. Concat
         // unsafe=1 helps with minor timestamp mismatches
         filters.push(`[fwd_out][rev_out]concat=n=2:v=1:a=0:unsafe=1[looped]`);
-        stream = '[looped]';
+        currentStream = '[looped]';
       } else {
-        filters.push(`[0:v]trim=start=${trimStart}:end=${trimEnd},setpts=PTS-STARTPTS[trimmed]`);
-        stream = '[trimmed]';
+        // Just rename/ensure label matches
+        // (If no speed logic ran, 'currentStream' is '[base_trimmed]'. If speed ran, it's '[speed_out]')
+        // We don't strictly need to do anything, but let's label it [trimmed] for the crop stage
+        // Actually the next stage uses 'stream' variable.
       }
 
-      // 2. Crop
+      const stream = currentStream;
+
+      // 4. Crop
       // React-easy-crop gives x, y, width, height (cropAreaPixels)
       // Ensure integers
       const cropW = Math.round(crop.width);

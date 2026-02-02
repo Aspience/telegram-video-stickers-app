@@ -2,9 +2,12 @@ import React, {useEffect, useMemo, useRef, useState} from 'react';
 import Cropper, {CropperProps} from 'react-easy-crop';
 import {Box, Button, Checkbox, CircularProgress, FormControlLabel, Slider, Typography} from '@mui/material';
 
-import {useBoomerangController} from '../hooks/useBoomerangController';
+import {usePreviewController} from '../hooks/usePreviewController';
 import {useStore} from '../store';
+import {getResultDuration} from '../utils/getResultDuration';
 import {ConfirmationDialog} from './ConfirmationDialog';
+import {SpeedControl} from './SpeedControl';
+import {StatusBar} from './StatusBar';
 
 export const Editor: React.FC = () => {
   const {
@@ -22,6 +25,7 @@ export const Editor: React.FC = () => {
     reset,
     boomerangFrameTrim,
     setBoomerangFrameTrim,
+    speed,
   } = useStore((state) => state);
 
   const [visualCropPosition, setVisualCropPosition] = useState(savedCrop.visualPosition);
@@ -70,6 +74,7 @@ export const Editor: React.FC = () => {
         trim,
         boomerang,
         boomerangFrameTrim: useStore.getState().boomerangFrameTrim,
+        speed: useStore.getState().speed,
       });
       setProcessedFile(resultPath);
     } catch (e: unknown) {
@@ -80,27 +85,27 @@ export const Editor: React.FC = () => {
     }
   };
 
-  const selectedDuration = trim.end - trim.start;
-  const effectiveDuration = boomerang ? selectedDuration * 2 : selectedDuration;
+  const effectiveDuration = getResultDuration({trim, boomerang, speed});
   const isValid = effectiveDuration <= 3.0;
 
   // Fix for flickering: memoize object URL
   const videoSrc = useMemo(() => (file ? URL.createObjectURL(file) : undefined), [file]);
 
   // --- Boomerang Emulator Logic ---
-  useBoomerangController({
+  usePreviewController({
     videoRef,
     videoSrc,
     trim,
     boomerang,
     boomerangFrameTrim,
+    speed,
   });
   // --------------------------------
 
   return (
     <Box sx={{height: '100vh', display: 'flex', flexDirection: 'column'}}>
       {/* 1. Cropper Area */}
-      <Box sx={{position: 'relative', flex: 1, bgcolor: '#000'}}>
+      <Box sx={{position: 'relative', flex: '0 0 55vh', bgcolor: '#000'}}>
         <Cropper
           setVideoRef={(ref) => {
             videoRef.current = ref.current;
@@ -126,7 +131,7 @@ export const Editor: React.FC = () => {
       </Box>
 
       {/* 2. Controls Area */}
-      <Box sx={{p: 3, bgcolor: 'white', borderTop: '1px solid #ddd'}}>
+      <Box sx={{p: 3, bgcolor: 'white', borderTop: '1px solid #ddd', flex: '1 1 auto', overflowY: 'auto', mb: '24px'}}>
         {/* Timeline Slider */}
         <Typography gutterBottom>
           Trim ({trim.start.toFixed(1)}s - {trim.end.toFixed(1)}s)
@@ -155,16 +160,7 @@ export const Editor: React.FC = () => {
           />
         </Box>
 
-        {/* Error Display */}
-        {lastError && (
-          <Box
-            sx={{mt: 2, p: 3, bgcolor: '#ffebee', color: '#c62828', borderRadius: 1, overflow: 'auto', maxHeight: 200}}
-          >
-            <Typography variant="caption" component="pre" sx={{whiteSpace: 'pre-wrap'}}>
-              {lastError}
-            </Typography>
-          </Box>
-        )}
+        <SpeedControl />
 
         <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2}}>
           <Box>
@@ -192,14 +188,6 @@ export const Editor: React.FC = () => {
           </Box>
 
           <Box>
-            <Typography
-              color={isValid ? 'green' : 'error'}
-              variant="caption"
-              sx={{mr: 2, display: 'block', textAlign: 'right'}}
-            >
-              Total Duration: {effectiveDuration.toFixed(1)}s / 3.0s
-            </Typography>
-
             <Box sx={{display: 'flex', gap: 2}}>
               <Button variant="outlined" onClick={() => setIsConfirmationDialogOpen(true)} disabled={isProcessing}>
                 Cancel
@@ -222,6 +210,7 @@ export const Editor: React.FC = () => {
           </Box>
         </Box>
       </Box>
+      <StatusBar error={lastError} isValid={isValid} effectiveDuration={effectiveDuration} />
     </Box>
   );
 };
