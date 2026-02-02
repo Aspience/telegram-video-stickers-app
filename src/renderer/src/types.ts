@@ -12,7 +12,6 @@ export interface Api {
     speed?: {
       enabled: boolean;
       value: number;
-      fade: boolean;
       range: {start: number; end: number};
     };
   }) => Promise<string>;

@@ -7,6 +7,7 @@ import {useStore} from '../store';
 import {getResultDuration} from '../utils/getResultDuration';
 import {ConfirmationDialog} from './ConfirmationDialog';
 import {SpeedControl} from './SpeedControl';
+import {StatusBar} from './StatusBar';
 
 export const Editor: React.FC = () => {
   const {
@@ -130,7 +131,7 @@ export const Editor: React.FC = () => {
       </Box>
 
       {/* 2. Controls Area */}
-      <Box sx={{p: 3, bgcolor: 'white', borderTop: '1px solid #ddd', flex: '1 1 auto', overflowY: 'auto'}}>
+      <Box sx={{p: 3, bgcolor: 'white', borderTop: '1px solid #ddd', flex: '1 1 auto', overflowY: 'auto', mb: '24px'}}>
         {/* Timeline Slider */}
         <Typography gutterBottom>
           Trim ({trim.start.toFixed(1)}s - {trim.end.toFixed(1)}s)
@@ -161,17 +162,6 @@ export const Editor: React.FC = () => {
 
         <SpeedControl />
 
-        {/* Error Display */}
-        {lastError && (
-          <Box
-            sx={{mt: 2, p: 3, bgcolor: '#ffebee', color: '#c62828', borderRadius: 1, overflow: 'auto', maxHeight: 200}}
-          >
-            <Typography variant="caption" component="pre" sx={{whiteSpace: 'pre-wrap'}}>
-              {lastError}
-            </Typography>
-          </Box>
-        )}
-
         <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2}}>
           <Box>
             <FormControlLabel
@@ -198,14 +188,6 @@ export const Editor: React.FC = () => {
           </Box>
 
           <Box>
-            <Typography
-              color={isValid ? 'green' : 'error'}
-              variant="caption"
-              sx={{mr: 2, display: 'block', textAlign: 'right'}}
-            >
-              Total Duration: {effectiveDuration.toFixed(2)}s / 3.0s
-            </Typography>
-
             <Box sx={{display: 'flex', gap: 2}}>
               <Button variant="outlined" onClick={() => setIsConfirmationDialogOpen(true)} disabled={isProcessing}>
                 Cancel
@@ -228,6 +210,7 @@ export const Editor: React.FC = () => {
           </Box>
         </Box>
       </Box>
+      <StatusBar error={lastError} isValid={isValid} effectiveDuration={effectiveDuration} />
     </Box>
   );
 };

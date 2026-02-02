@@ -40,10 +40,6 @@ export const Result: React.FC = () => {
         justifyContent: 'center',
       }}
     >
-      <Typography variant="h4" gutterBottom sx={{fontWeight: 'bold'}}>
-        Sticker Ready!
-      </Typography>
-
       <Paper elevation={3} sx={{p: 2, mb: 3, bgcolor: '#000', borderRadius: 2}}>
         {videoSrc ? (
           <video

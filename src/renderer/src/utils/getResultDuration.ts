@@ -27,32 +27,7 @@ export const getResultDuration = ({trim, boomerang, speed}: GetResultDurationPar
       // Part C: validEnd to duration -> Duration = duration - validEnd (No change)
 
       // Calculate new time for Part B
-      let newRangeDuration = rangeDuration;
-
-      if (speed.fade) {
-        // Ramp Logic:
-        // Speed linearly ramps from 1.0 to Target Speed over the range.
-        // Formula for Time taken: T_new = (T_old / (Target - 1)) * ln(Target)
-        // Check for S=1 case to avoid div/0
-
-        // Wait, why ln(Target)?
-        // Previous derivation: Integral(1/(1 + k*t)) dt
-        // k = (Target - 1) / T
-        // Result = (1/k) * ln(1 + k*T) = (T / (Target - 1)) * ln(1 + (Target-1)) = (T / (Target - 1)) * ln(Target)
-        // Yes.
-
-        const target = speed.value;
-        if (Math.abs(target - 1) < 0.001) {
-          newRangeDuration = rangeDuration;
-        } else {
-          // If target < 0? speed is clamped > 0, so ln is safe.
-          newRangeDuration = (rangeDuration / (target - 1)) * Math.log(target);
-        }
-      } else {
-        // Constant Speed
-        // T_new = T_old / Speed
-        newRangeDuration = rangeDuration / speed.value;
-      }
+      const newRangeDuration = rangeDuration / speed.value;
 
       calculatedDuration = validStart + newRangeDuration + (duration - validEnd);
     }

@@ -159,59 +159,60 @@ void app.whenReady().then(() => {
         const rEnd = Math.min(duration, speed.range.end);
 
         if (rEnd > rStart) {
-          // Split into 3 parts (conceptually)
-          // But trim filter takes ABSOLUTE timestamps if used on original,
-          // HERE we are using it on [base_trimmed] which starts at 0.
+          // Determine inputs for each part logic
+          // We effectively have 3 potential segments: A (Pre), B (Speed Range), C (Post).
+          // B is always present (the selected range).
+          const hasPartA = rStart > 0.01;
+          const hasPartC = rEnd < duration - 0.01;
+
+          let inputA = '';
+          let inputB = '';
+          let inputC = '';
+
+          // Construct Split Filter based on connected components needed
+          if (hasPartA && hasPartC) {
+            // Need A, B, C
+            filters.push(`${currentStream}split=3[pre_in][mid_in][post_in]`);
+            inputA = '[pre_in]';
+            inputB = '[mid_in]';
+            inputC = '[post_in]';
+          } else if (hasPartA && !hasPartC) {
+            // Need A, B
+            filters.push(`${currentStream}split=2[pre_in][mid_in]`);
+            inputA = '[pre_in]';
+            inputB = '[mid_in]';
+          } else if (!hasPartA && hasPartC) {
+            // Need B, C
+            filters.push(`${currentStream}split=2[mid_in][post_in]`);
+            inputB = '[mid_in]';
+            inputC = '[post_in]';
+          } else {
+            // Need B only
+            // Direct pass-through
+            inputB = currentStream;
+          }
 
           // Part A (if start > 0)
           let partA = '';
-          if (rStart > 0.01) {
-            filters.push(`${currentStream}split=3[pre_in][mid_in][post_in]`);
-            filters.push(`[pre_in]trim=start=0:end=${rStart},setpts=PTS-STARTPTS[speed_a]`);
+          if (hasPartA) {
+            filters.push(`${inputA}trim=start=0:end=${rStart},setpts=PTS-STARTPTS[speed_a]`);
             partA = '[speed_a]';
-          } else {
-            filters.push(`${currentStream}split=2[mid_in][post_in]`);
           }
 
           // Part B (The Speed Zone)
-          const rangeDur = rEnd - rStart;
           const partB = '[speed_b]';
 
-          if (speed.fade) {
-            // Fade / Ramp
-            // Ramp from 1.0 (at t=0 of this part) to TARGET (at t=end)
-            // SetPTS formula: T / Speed(t) integrated
-            // If Linear Speed S(t) = 1 + (Target-1)*(t/Dur)
-            // Integral(1/(A+Bt)) = (1/B)*ln(A+Bt)
-            // A = 1, B = (Target-1)/Dur
-            const target = speed.value;
-            if (Math.abs(target - 1) < 0.01) {
-              // No speed change effectively
-              filters.push(`[mid_in]trim=start=${rStart}:end=${rEnd},setpts=PTS-STARTPTS[speed_b]`);
-            } else {
-              const B = (target - 1) / rangeDur;
-              // Formula: (1/B) * ln(1 + B*T)
-              // FFmpeg 'setpts' expression uses T (timestamp in seconds)
-              // We need to apply trim first relative to start...
-              // Actually easier: use 'trim' to isolate part B, resets PTS to 0.
-              // Then apply setpts logic.
-              const setptsExpr = `(1/${B})*log(1+${B}*T)`;
-              filters.push(`[mid_in]trim=start=${rStart}:end=${rEnd},setpts=PTS-STARTPTS[mid_trimmed]`);
-              filters.push(`[mid_trimmed]setpts=${setptsExpr}[speed_b]`);
-            }
-          } else {
-            // Constant Speed
-            // Speed Factor S. New Duration = Old / S.
-            // setpts = PTS * (1/S)
-            const factor = 1 / speed.value;
-            filters.push(`[mid_in]trim=start=${rStart}:end=${rEnd},setpts=PTS-STARTPTS[mid_trimmed]`);
-            filters.push(`[mid_trimmed]setpts=${factor}*PTS[speed_b]`);
-          }
+          // Constant Speed
+          // Speed Factor S. New Duration = Old / S.
+          // setpts = PTS * (1/S)
+          const factor = 1 / speed.value;
+          filters.push(`${inputB}trim=start=${rStart}:end=${rEnd},setpts=PTS-STARTPTS[mid_trimmed]`);
+          filters.push(`[mid_trimmed]setpts=${factor}*PTS[speed_b]`);
 
           // Part C (if end < duration)
           let partC = '';
-          if (rEnd < duration - 0.01) {
-            filters.push(`[post_in]trim=start=${rEnd},setpts=PTS-STARTPTS[speed_c]`);
+          if (hasPartC) {
+            filters.push(`${inputC}trim=start=${rEnd},setpts=PTS-STARTPTS[speed_c]`);
             partC = '[speed_c]';
           }
 

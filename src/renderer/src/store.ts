@@ -25,7 +25,6 @@ interface State {
 export interface SpeedState {
   enabled: boolean;
   value: number;
-  fade: boolean;
   range: {start: number; end: number};
 }
 
@@ -64,7 +63,6 @@ const initialState: State = {
   speed: {
     enabled: false,
     value: 1,
-    fade: false,
     range: {start: 0, end: 1},
   },
 };

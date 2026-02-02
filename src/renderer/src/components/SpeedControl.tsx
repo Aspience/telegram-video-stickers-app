@@ -43,10 +43,6 @@ export const SpeedControl: React.FC = () => {
           control={<Checkbox checked={speed.enabled} onChange={(e) => setSpeed({enabled: e.target.checked})} />}
           label="Enable Speed Control"
         />
-        <FormControlLabel
-          control={<Checkbox checked={speed.fade} onChange={(e) => setSpeed({fade: e.target.checked})} />}
-          label="Fade Transition"
-        />
       </Box>
 
       <Box sx={{mt: 2}}>
