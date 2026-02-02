@@ -59,30 +59,7 @@ export const usePreviewController = ({
         const {start: rStart, end: rEnd} = speed.range;
 
         if (relativeTime >= rStart && relativeTime <= rEnd) {
-          if (speed.fade) {
-            // Linear Ramp: 1.0 -> Target -> 1.0 logic?
-            // "The video smoothly slows down in the specified area"
-            // Implementation: Ramp from 1.0 (at rStart) to Value (at rEnd)?
-            // OR Ramp from 1.0 to Value to 1.0?
-            // "on the specified range" likely means the range IS the transition or the effect area.
-            // Let's implement a ramp from 1.0 to Target over the range.
-            // WAIT, if it ramps to Target over the range, what happens after?
-            // Usually "Fade" implies mixing.
-            // Let's stick to the plan: "Fade" = Smooth ramp.
-            // But if we ramp 1->Target, we are at Target speed at the end.
-            // Let's try: Ramp from 1.0 to Target over the duration of the range.
-            const rangeDuration = rEnd - rStart;
-            if (rangeDuration > 0) {
-              const progress = (relativeTime - rStart) / rangeDuration;
-              // Linear interpolation of rate
-              // rate = 1 + (target - 1) * progress
-              const newRate = 1 + (speed.value - 1) * progress;
-              video.playbackRate = Math.max(0.1, newRate); // Safety clamp
-            }
-          } else {
-            // Constant speed in range
-            video.playbackRate = speed.value;
-          }
+          video.playbackRate = speed.value;
         } else {
           // Outside range
           video.playbackRate = 1.0;
@@ -141,15 +118,7 @@ export const usePreviewController = ({
           const relativeTime = video.currentTime - trim.start;
           const {start: rStart, end: rEnd} = speed.range;
           if (relativeTime >= rStart && relativeTime <= rEnd) {
-            if (speed.fade) {
-              const rangeDuration = rEnd - rStart;
-              if (rangeDuration > 0) {
-                const progress = (relativeTime - rStart) / rangeDuration;
-                currentSpeed = 1 + (speed.value - 1) * progress;
-              }
-            } else {
-              currentSpeed = speed.value;
-            }
+            currentSpeed = speed.value;
           }
         }
 
