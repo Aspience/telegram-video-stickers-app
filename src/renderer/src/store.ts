@@ -20,6 +20,7 @@ interface State {
   boomerangFrameTrim: number;
   notification: {message: string; severity: AlertColor} | null;
   speed: SpeedState;
+  error: string | null;
 }
 
 export interface SpeedState {
@@ -41,6 +42,7 @@ interface Setters {
   clearResult: () => void;
   reset: () => void;
   setSpeed: (speed: Partial<SpeedState>) => void;
+  setError: (error: string | null) => void;
 }
 
 type AppState = State & Setters;
@@ -65,6 +67,7 @@ const initialState: State = {
     value: 1,
     range: {start: 0, end: 1},
   },
+  error: null,
 };
 
 export const useStore = create<AppState>((set, get) => ({
@@ -81,4 +84,5 @@ export const useStore = create<AppState>((set, get) => ({
   clearResult: () => set({processedFile: null}),
   reset: () => set({...initialState}),
   setSpeed: (speed) => set({speed: {...get().speed, ...speed}}),
+  setError: (error) => set({error}),
 }));

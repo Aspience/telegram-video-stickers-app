@@ -1,0 +1,46 @@
+{
+  "Common": {
+    "seconds": "с"
+  },
+  "ConfirmationDialog": {
+    "cancel": "Отмена",
+    "confirm": "Подтвердить"
+  },
+  "Editor": {
+    "boomerangLoop": "Бумеранг",
+    "cancel": "Отмена",
+    "cancelConfirm": "Вы уверены? Все изменения будут потеряны.",
+    "cancelTitle": "Отменить?",
+    "createSticker": "Создать стикер",
+    "trim": "Обрезка",
+    "trimFrames": "Обрезать кадры с конца (реверс)",
+    "zoom": "Масштаб"
+  },
+  "Result": {
+    "backToEdit": "Назад к редактированию",
+    "loading": "Загрузка...",
+    "showInFolder": "Показать в папке",
+    "startOver": "Начать заново",
+    "startOverConfirm": "Вы уверены? Текущий стикер будет удален.",
+    "startOverTitle": "Начать заново?"
+  },
+  "SpeedControl": {
+    "enable": "Включить контроль скорости",
+    "relativeToTrimmed": "Относительно обрезанного видео",
+    "reset": "Сброс",
+    "speed": "Скорость",
+    "speedRange": "Диапазон скорости"
+  },
+  "StatusBar": {
+    "close": "Закрыть",
+    "error": "Ошибка",
+    "errorDetails": "Подробности ошибки",
+    "totalDuration": "Общая длительность"
+  },
+  "Uploader": {
+    "dragDrop": "Перетащите видео сюда или нажмите для выбора",
+    "errorOpeningFile": "Ошибка открытия файла: {{error}}",
+    "fileRejected": "Файл отклонен: {{error}}",
+    "formats": "MP4, WEBM"
+  }
+}

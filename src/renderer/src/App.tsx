@@ -1,9 +1,9 @@
 import React from 'react';
 import {Alert, Box, Snackbar} from '@mui/material';
 
-import {Editor} from './components/Editor';
-import {Result} from './components/Result';
-import {Uploader} from './components/Uploader';
+import {Editor} from './screens/Editor';
+import {Result} from './screens/Result';
+import {Uploader} from './screens/Uploader';
 import {useStore} from './store';
 
 const App: React.FC = () => {

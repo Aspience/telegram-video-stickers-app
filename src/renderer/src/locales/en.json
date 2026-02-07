@@ -1,0 +1,46 @@
+{
+  "Common": {
+    "seconds": "s"
+  },
+  "ConfirmationDialog": {
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "Editor": {
+    "boomerangLoop": "Boomerang Loop",
+    "cancel": "Cancel",
+    "cancelConfirm": "Are you sure you want to cancel? All changes will be lost.",
+    "cancelTitle": "Cancel?",
+    "createSticker": "Create Sticker",
+    "trim": "Trim",
+    "trimFrames": "Trim Frames from Reverse",
+    "zoom": "Zoom"
+  },
+  "Result": {
+    "backToEdit": "Back to Edit",
+    "loading": "Loading...",
+    "showInFolder": "Show in Folder",
+    "startOver": "Start Over",
+    "startOverConfirm": "Are you sure you want to start over? This will clear the current sticker.",
+    "startOverTitle": "Start Over?"
+  },
+  "SpeedControl": {
+    "enable": "Enable Speed Control",
+    "relativeToTrimmed": "Relative to trimmed video",
+    "reset": "Reset",
+    "speed": "Speed",
+    "speedRange": "Speed Range"
+  },
+  "StatusBar": {
+    "close": "Close",
+    "error": "Error",
+    "errorDetails": "Error Details",
+    "totalDuration": "Total Duration"
+  },
+  "Uploader": {
+    "dragDrop": "Drag & drop video here, or click to select",
+    "errorOpeningFile": "Error opening file: {{error}}",
+    "fileRejected": "File rejected: {{error}}",
+    "formats": "MP4, WEBM"
+  }
+}

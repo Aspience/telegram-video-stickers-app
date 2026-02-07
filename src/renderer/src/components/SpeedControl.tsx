@@ -1,9 +1,11 @@
 import React, {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import {Box, Checkbox, FormControlLabel, Slider, Typography} from '@mui/material';
 
 import {useStore} from '../store';
 
 export const SpeedControl: React.FC = () => {
+  const {t} = useTranslation();
   const {speed, setSpeed, trim} = useStore((state) => state);
   const {start, end} = trim;
   const duration = end - start;
@@ -20,17 +22,17 @@ export const SpeedControl: React.FC = () => {
 
   const marks = useMemo(() => {
     return [
-      {value: 0, label: '0s'},
-      {value: duration, label: `${duration.toFixed(1)}s`},
+      {value: 0, label: `0${t('Common.seconds')}`},
+      {value: duration, label: `${duration.toFixed(1)}${t('Common.seconds')}`},
     ];
-  }, [duration]);
+  }, [duration, t]);
 
   if (!speed.enabled) {
     return (
       <Box sx={{mt: 2}}>
         <FormControlLabel
           control={<Checkbox checked={false} onChange={(e) => setSpeed({enabled: e.target.checked})} />}
-          label="Enable Speed Control"
+          label={t('SpeedControl.enable')}
         />
       </Box>
     );
@@ -41,12 +43,14 @@ export const SpeedControl: React.FC = () => {
       <Box sx={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
         <FormControlLabel
           control={<Checkbox checked={speed.enabled} onChange={(e) => setSpeed({enabled: e.target.checked})} />}
-          label="Enable Speed Control"
+          label={t('SpeedControl.enable')}
         />
       </Box>
 
       <Box sx={{mt: 2}}>
-        <Typography gutterBottom>Speed Factor ({speed.value}x)</Typography>
+        <Typography gutterBottom>
+          {t('SpeedControl.speed')} ({speed.value}x)
+        </Typography>
         <Slider
           value={speed.value}
           min={0.25}
@@ -64,7 +68,9 @@ export const SpeedControl: React.FC = () => {
 
       <Box sx={{mt: 2}}>
         <Typography gutterBottom>
-          Speed Range ({speed.range.start.toFixed(2)}s - {speed.range.end.toFixed(2)}s)
+          {t('SpeedControl.speedRange')} ({speed.range.start.toFixed(2)}
+          {t('Common.seconds')} - {speed.range.end.toFixed(2)}
+          {t('Common.seconds')})
         </Typography>
         <Slider
           value={[safeRangeStart, safeRangeEnd]}
@@ -76,7 +82,7 @@ export const SpeedControl: React.FC = () => {
           valueLabelDisplay="auto"
         />
         <Typography variant="caption" color="textSecondary">
-          Relative to trimmed video
+          {t('SpeedControl.relativeToTrimmed')}
         </Typography>
       </Box>
     </Box>

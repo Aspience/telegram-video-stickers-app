@@ -4,6 +4,7 @@ import {createTheme, CssBaseline, ThemeProvider} from '@mui/material';
 
 import App from './App';
 
+import './i18n';
 import './assets/index.css';
 
 // Telegram Theme

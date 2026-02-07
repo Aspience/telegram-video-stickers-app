@@ -47,7 +47,7 @@ This project is built using the following technologies:
 Here is a list of available npm scripts and their descriptions:
 
 | Script         | Description                                                       |
-|:---------------|:------------------------------------------------------------------|
+| :------------- | :---------------------------------------------------------------- |
 | `dev`          | Starts the development server with Electron and Vite.             |
 | `build`        | Runs type checks and builds the application for production.       |
 | `start`        | Previews the built application.                                   |
