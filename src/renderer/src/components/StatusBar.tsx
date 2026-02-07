@@ -22,7 +22,7 @@ import {getResultDuration} from '../utils/getResultDuration';
 
 export const StatusBar: React.FC = () => {
   const {t, i18n} = useTranslation();
-  const {file, processedFile, trim, boomerang, speed, error, setError} = useStore((state) => state);
+  const {file, processedFile, trim, boomerang, speed, error} = useStore((state) => state);
   const [isErrorOpen, setIsErrorOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
