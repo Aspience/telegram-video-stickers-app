@@ -3,8 +3,35 @@
   "version": "1.0.0",
   "description": "Create Telegram video stickers compliant with technical requirements",
   "main": "out/main/index.js",
-  "author": "Developer",
-  "homepage": "https://example.com",
+  "author": "Aspience",
+  "homepage": "https://github.com/Aspience/telegram-video-stickers-app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aspience/telegram-video-stickers-app.git"
+  },
+  "build": {
+    "appId": "com.example.telegram-video-stickers",
+    "productName": "Telegram Video Stickers",
+    "publish": {
+      "provider": "github",
+      "owner": "Aspience",
+      "repo": "telegram-video-stickers-app"
+    },
+    "asarUnpack": [
+      "**/node_modules/ffmpeg-static/**",
+      "**/node_modules/ffprobe-static/**"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Utility"
+    }
+  },
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
