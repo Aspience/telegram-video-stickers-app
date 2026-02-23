@@ -1,6 +1,6 @@
 {
   "name": "telegram-video-stickers",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Create Telegram video stickers compliant with technical requirements",
   "main": "out/main/index.js",
   "author": "Aspience",
