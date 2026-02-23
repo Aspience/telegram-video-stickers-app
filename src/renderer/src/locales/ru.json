@@ -21,7 +21,7 @@
     "loading": "Загрузка...",
     "showInFolder": "Показать в папке",
     "startOver": "Начать заново",
-    "startOverConfirm": "Вы уверены? Текущий стикер будет удален.",
+    "startOverConfirm": "Вы уверены? Текущий прогресс будет сброшен.",
     "startOverTitle": "Начать заново?"
   },
   "SpeedControl": {
