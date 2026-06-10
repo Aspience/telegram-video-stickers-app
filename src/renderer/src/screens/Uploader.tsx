@@ -42,6 +42,7 @@ export const Uploader: React.FC = () => {
     accept: {
       'video/mp4': ['.mp4'],
       'video/webm': ['.webm'],
+      'video/quicktime': ['.mov'],
     },
   });
 

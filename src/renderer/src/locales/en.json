@@ -41,6 +41,6 @@
     "dragDrop": "Drag & drop video here, or click to select",
     "errorOpeningFile": "Error opening file: {{error}}",
     "fileRejected": "File rejected: {{error}}",
-    "formats": "MP4, WEBM"
+    "formats": "MP4, WEBM, MOV"
   }
 }
